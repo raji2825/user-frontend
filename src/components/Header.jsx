@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
@@ -7,17 +7,19 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const syncAuth = () => setIsLoggedIn(!!Cookies.get('token'));
+  const syncAuth = useCallback(() => {
+    setIsLoggedIn(!!Cookies.get('token'));
+  }, []);
 
   useEffect(() => {
     syncAuth();
     window.addEventListener('auth-changed', syncAuth);
     return () => window.removeEventListener('auth-changed', syncAuth);
-  }, []);
+  }, [syncAuth]);
 
   useEffect(() => {
     syncAuth();
-  }, [location]);
+  }, [location, syncAuth]);
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -28,9 +30,7 @@ const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div className="container-fluid">
-        <Link className="navbar-brand fw-bold" to="/">
-          Hotel Booking
-        </Link>
+        <Link className="navbar-brand fw-bold" to="/">Hotel Booking</Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -44,33 +44,22 @@ const Header = () => {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto gap-2">
+          <ul className="navbar-nav ms-auto">
+            <li className="nav-item">
+              <Link to="/" className="nav-link fw-bold">Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/bookings" className="nav-link fw-bold">Pending</Link>
+            </li>
             {isLoggedIn ? (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link fw-bold" to="/admin-dashboard">
-                    AdminDashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link fw-bold" to="/admin/bookings">
-                    Admin Approve
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className="btn btn-light text-primary fw-bold ms-lg-2"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
+              <li className="nav-item">
+                <button onClick={handleLogout} className="btn btn-light fw-bold text-primary ms-lg-3 mt-2 mt-lg-0">
+                  Logout
+                </button>
+              </li>
             ) : (
               <li className="nav-item">
-                <Link className="nav-link fw-bold" to="/login">
-                  Login
-                </Link>
+                <Link to="/login" className="nav-link fw-bold">Login</Link>
               </li>
             )}
           </ul>
